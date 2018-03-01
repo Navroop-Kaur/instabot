@@ -1,4 +1,5 @@
 import requests #importing requests lib
+import urllib
 from pprint import pprint #importing pretty print
 
 response = requests.get('https://api.jsonbin.io/b/59d0f30408be13271f7df29c').json()
@@ -21,7 +22,11 @@ def self_post(): #function for user or owner info
     r = requests.get('%susers/self/media/recent/?access_token=%s' % (BASE_URL, APP_ACCESS_TOKEN)).json()
     if r['meta']['code'] == 200:
         #pprint(r)
-        print r ['data'][0]['images']['standard_resolution']['url']
+        print r['data'][0]['images']['standard_resolution']['url']
+        url = r ['data'][0]['images']['standard_resolution']['url']
+        name = r['data'][0]['id'] + '.jpg'
+        urllib.urlretrieve(url,name)
+        print "Downloaded"
 
     else:
         print 'Status code other than 200 received!'
@@ -47,8 +52,12 @@ def user_post(username):
     user_id =get_user_id(username)
     r = requests.get('%susers/%s/media/recent/?access_token=%s' % (BASE_URL,user_id, APP_ACCESS_TOKEN)).json()
     if r['meta']['code'] == 200:
-        # pprint(r)
+        #pprint(r)
         print r['data'][0]['images']['standard_resolution']['url']
+        url = r['data'][0]['images']['standard_resolution']['url']
+        name = r['data'][0]['id'] + '.mp4'
+        urllib.urlretrieve(url, name)
+        print "Downloaded"
 
     else:
         print 'Status code other than 200 received!'
