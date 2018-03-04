@@ -1,6 +1,8 @@
 import requests #importing requests lib
 import urllib
 from pprint import pprint #importing pretty print
+from textblob import TextBlob
+from textblob.sentiments import NaiveBayesAnalyzer
 
 response = requests.get('https://api.jsonbin.io/b/59d0f30408be13271f7df29c').json()
 APP_ACCESS_TOKEN = response['access_token']#Access token different for every user
@@ -98,11 +100,32 @@ def comment_post(uname):
     else:
         print 'comment unsuccessful'
 
+def del_comment(uname):
+    media_id = get_media_id(uname)
+    r = requests.get('%smedia/%s/comments?access_token=%s'%(BASE_URL, media_id, APP_ACCESS_TOKEN)).json()
+    if r['meta']['code'] == 200:
+        if len(r['data'])> 0:
+            for index in range(0,len(r['data'])):
+                cmnt_id = r['data'][index]['id']
+                cmnt_text = r['data'][index]['text']
+                blob = TextBlob(cmnt_text, analyzer=NaiveBayesAnalyzer())
+                if (blob.sentiment.p_neg > blob.sentiment.p_pos):
+                    print 'Negative comment : %s' % (cmnt_text)
+                    r = requests.delete('%smedia/%s/comments/%s/?access_token=%s'% (BASE_URL, media_id, cmnt_id, APP_ACCESS_TOKEN)).json()
+                    if r['meta']['code'] == 200:
+                        print 'Comment successfully deleted!'
+                    else:
+                        print 'Could not delete the comment'
+        else :
+            print "No comments found."
+    else:
+        print 'Error'
+
 
 def start_bot():
     show_menu = True
     while show_menu:
-        query = input("What do you want to do? \n 1. Get Owner Info. \n 2. Get Owner Post \n 3. Get Other User Info \n 4. Get Other User Post \n 5. Like A Post \n 6. Comment On Post \n 0. Exit ")
+        query = input("What do you want to do? \n 1. Get Owner Info. \n 2. Get Owner Post \n 3. Get Other User Info \n 4. Get Other User Post \n 5. Like A Post \n 6. Comment On Post \n 7. Delete Negative Comments \n 0. Exit ")
         if query == 1:
             self_info()
         elif query == 2:
@@ -119,6 +142,9 @@ def start_bot():
         elif query ==6:
             user_name = raw_input('What is the user name?')
             comment_post(user_name)
+        elif query == 7:
+            user_name = raw_input('What is the user name?')
+            del_comment(user_name)
         elif query == 0:
             show_menu = False
         else:
