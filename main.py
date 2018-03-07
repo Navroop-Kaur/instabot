@@ -73,7 +73,7 @@ def get_media_id(uname):
     user_id = get_user_id(uname)
     r = requests.get('%susers/%s/media/recent/?access_token=%s' % (BASE_URL, user_id, APP_ACCESS_TOKEN)).json()
     if r['meta']['code'] == 200:
-        return r['data'][3]['id']
+        return r['data'][0]['id']
     else:
         print 'Status code other than 200 received!'
 
@@ -82,7 +82,7 @@ def like_post(uname):
     media_id = get_media_id(uname)
     payload = {"access_token": APP_ACCESS_TOKEN}
     url = BASE_URL + 'media/%s/likes' % (media_id)
-    r =requests.get(url, payload).json()
+    r =requests.post(url, payload).json()
     if r['meta']['code'] == 200:
         print "like successful"
     else:
@@ -94,7 +94,7 @@ def comment_post(uname):
     comment = raw_input("What is your comment")
     payload = {"access_token": APP_ACCESS_TOKEN, 'text':comment}
     url = BASE_URL + 'media/%s/comments' % (media_id)
-    r = requests.get(url, payload).json()
+    r = requests.post(url, payload).json()
     if r['meta']['code'] == 200:
         print "comment successful"
     else:
